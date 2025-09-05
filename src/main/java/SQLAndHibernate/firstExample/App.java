@@ -1,4 +1,4 @@
-package SQLAndHibernate;
+package SQLAndHibernate.firstExample;
 
 import java.sql.*;
 import java.util.LinkedHashMap;
