@@ -1,4 +1,3 @@
-// src/main/java/SQLAndHibernate/secondExample/models/LinkedPurchaseListKey.java
 package SQLAndHibernate.secondExample.models;
 
 import jakarta.persistence.Column;

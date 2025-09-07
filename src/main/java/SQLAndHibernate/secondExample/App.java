@@ -1,8 +1,9 @@
 package SQLAndHibernate.secondExample;
 
-import SQLAndHibernate.secondExample.models.LinkedPurchaseList;
-import SQLAndHibernate.secondExample.models.LinkedPurchaseListKey;
-import SQLAndHibernate.secondExample.models.PurchaseList;
+import SQLAndHibernate.secondExample.models.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -23,18 +24,50 @@ public class App {
         SessionFactory sessionFactory = metadata.buildSessionFactory();
         Session session = sessionFactory.openSession();
         Transaction tx = session.beginTransaction();
+        secondExamplePurchaseList(session);
+//        List<PurchaseList> fromPurchaseList = session.createQuery("from PurchaseList", PurchaseList.class).list();
+//        for (PurchaseList purchase : fromPurchaseList) {
+//            Integer studentId = session.createQuery(
+//                            "select id from Student where name = :name",Integer.class)
+//                    .setParameter("name", purchase.getStudentName())
+//                    .uniqueResult();
+//
+//            Integer courseId = session.createQuery(
+//                            "select id from Course where name = :name", Integer.class)
+//                    .setParameter("name", purchase.getCourseName())
+//                    .uniqueResult();
+//
+//            LinkedPurchaseListKey key = new LinkedPurchaseListKey();
+//            key.setStudentId(studentId);
+//            key.setCourseId(courseId);
+//
+//            LinkedPurchaseList linked = new LinkedPurchaseList();
+//            linked.setId(key);
+//
+//            session.persist(linked);
+//        }
 
-        List<PurchaseList> fromPurchaseList = session.createQuery("from PurchaseList", PurchaseList.class).list();
-        for (PurchaseList purchase : fromPurchaseList) {
-            Integer studentId = session.createQuery(
-                            "select id from Student where name = :name",Integer.class)
-                    .setParameter("name", purchase.getStudentName())
-                    .uniqueResult();
+        tx.commit();
+        session.close();
+    }
 
-            Integer courseId = session.createQuery(
-                            "select id from Course where name = :name", Integer.class)
-                    .setParameter("name", purchase.getCourseName())
-                    .uniqueResult();
+    public static void secondExamplePurchaseList(Session session) {
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+        CriteriaQuery<PurchaseList> purchaseListCriteriaQuery = criteriaBuilder.createQuery(PurchaseList.class);
+        Root<PurchaseList> purchaseListRoot = purchaseListCriteriaQuery.from(PurchaseList.class);
+        purchaseListCriteriaQuery.select(purchaseListRoot);
+
+        List<PurchaseList> resultList = session.createQuery(purchaseListCriteriaQuery).getResultList();
+        for (PurchaseList purchase : resultList) {
+            CriteriaQuery<Integer> studentCriteria = criteriaBuilder.createQuery(Integer.class);
+            Root<Student> studentRoot = studentCriteria.from(Student.class);
+            studentCriteria.select(studentRoot.get("id")).where(criteriaBuilder.equal(studentRoot.get("name"), purchase.getStudentName()));
+            Integer studentId = session.createQuery(studentCriteria).uniqueResult();
+
+            CriteriaQuery<Integer> courseCriteria = criteriaBuilder.createQuery(Integer.class);
+            Root<Course> courseRoot = courseCriteria.from(Course.class);
+            courseCriteria.select(courseRoot.get("id")).where(criteriaBuilder.equal(studentRoot.get("name"), purchase.getCourseName()));
+            Integer courseId = session.createQuery(courseCriteria).uniqueResult();
 
             LinkedPurchaseListKey key = new LinkedPurchaseListKey();
             key.setStudentId(studentId);
@@ -45,8 +78,5 @@ public class App {
 
             session.persist(linked);
         }
-
-        tx.commit();
-        session.close();
     }
 }
