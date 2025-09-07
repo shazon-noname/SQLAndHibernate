@@ -66,7 +66,7 @@ public class App {
 
             CriteriaQuery<Integer> courseCriteria = criteriaBuilder.createQuery(Integer.class);
             Root<Course> courseRoot = courseCriteria.from(Course.class);
-            courseCriteria.select(courseRoot.get("id")).where(criteriaBuilder.equal(studentRoot.get("name"), purchase.getCourseName()));
+            courseCriteria.select(courseRoot.get("id")).where(criteriaBuilder.equal(courseRoot.get("name"), purchase.getCourseName()));
             Integer courseId = session.createQuery(courseCriteria).uniqueResult();
 
             LinkedPurchaseListKey key = new LinkedPurchaseListKey();
