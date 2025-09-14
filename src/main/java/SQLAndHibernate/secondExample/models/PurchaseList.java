@@ -15,7 +15,7 @@ public class PurchaseList {
     private String studentName;
     @Column(name = "course_name", insertable = false, updatable = false)
     private String courseName;
-    private int price;
+    private Integer price;
     @Column(name = "subscription_date")
     private Date subscriptionDate;
 }

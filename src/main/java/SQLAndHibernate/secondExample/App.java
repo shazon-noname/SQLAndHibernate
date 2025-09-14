@@ -24,31 +24,36 @@ public class App {
         SessionFactory sessionFactory = metadata.buildSessionFactory();
         Session session = sessionFactory.openSession();
         Transaction tx = session.beginTransaction();
-        secondExamplePurchaseList(session);
-//        List<PurchaseList> fromPurchaseList = session.createQuery("from PurchaseList", PurchaseList.class).list();
-//        for (PurchaseList purchase : fromPurchaseList) {
-//            Integer studentId = session.createQuery(
-//                            "select id from Student where name = :name",Integer.class)
-//                    .setParameter("name", purchase.getStudentName())
-//                    .uniqueResult();
-//
-//            Integer courseId = session.createQuery(
-//                            "select id from Course where name = :name", Integer.class)
-//                    .setParameter("name", purchase.getCourseName())
-//                    .uniqueResult();
-//
-//            LinkedPurchaseListKey key = new LinkedPurchaseListKey();
-//            key.setStudentId(studentId);
-//            key.setCourseId(courseId);
-//
-//            LinkedPurchaseList linked = new LinkedPurchaseList();
-//            linked.setId(key);
-//
-//            session.persist(linked);
-//        }
+//        secondExamplePurchaseList(session);
+        findCourse(session);
+//        firstExample(session);
 
         tx.commit();
         session.close();
+    }
+
+    private static void firstExample(Session session) {
+        List<PurchaseList> fromPurchaseList = session.createQuery("from PurchaseList", PurchaseList.class).list();
+        for (PurchaseList purchase : fromPurchaseList) {
+            Integer studentId = session.createQuery(
+                            "select id from Student where name = :name",Integer.class)
+                    .setParameter("name", purchase.getStudentName())
+                    .uniqueResult();
+
+            Integer courseId = session.createQuery(
+                            "select id from Course where name = :name", Integer.class)
+                    .setParameter("name", purchase.getCourseName())
+                    .uniqueResult();
+
+            LinkedPurchaseListKey key = new LinkedPurchaseListKey();
+            key.setStudentId(studentId);
+            key.setCourseId(courseId);
+
+            LinkedPurchaseList linked = new LinkedPurchaseList();
+            linked.setId(key);
+
+            session.persist(linked);
+        }
     }
 
     public static void secondExamplePurchaseList(Session session) {
@@ -78,5 +83,18 @@ public class App {
 
             session.persist(linked);
         }
+    }
+
+    public static void findCourse(Session session) {
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+        CriteriaQuery<Course> criteriaQuery = criteriaBuilder.createQuery(Course.class);
+        Root<Course> root = criteriaQuery.from(Course.class);
+        criteriaQuery.select(root)
+                .where(criteriaBuilder.greaterThan(root.get("price"), 1000))
+                .orderBy(criteriaBuilder.desc(root.get("price")));
+
+        List<Course> resultList = session.createQuery(criteriaQuery).getResultList();
+
+        resultList.forEach(course -> System.out.println(course.getName() + " - " + course.getPrice()));
     }
 }

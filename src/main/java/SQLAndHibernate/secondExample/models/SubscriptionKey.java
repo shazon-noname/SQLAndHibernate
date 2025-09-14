@@ -10,7 +10,7 @@ import java.io.Serializable;
 @Data
 public class SubscriptionKey implements Serializable {
     @Column(name = "student_id")
-    private int studentId;
+    private Integer studentId;
     @Column(name = "course_id")
-    private int courseId;
+    private Integer courseId;
 }

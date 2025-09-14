@@ -9,8 +9,8 @@ import lombok.Data;
 public class Teacher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
     private String name;
-    private int salary;
-    private int age;
+    private Integer salary;
+    private Integer age;
 }
