@@ -29,7 +29,7 @@ public class App {
 //        secondExamplePurchaseList(session);
 //        findCourse(session);
 //        firstExample(session);
-        findMultipleValues(session);
+        findTeachers(session);
 
         tx.commit();
         session.close();
@@ -110,13 +110,13 @@ public class App {
         Path<Object> pricePath = root.get("price");
         Path<Object> durationPath = root.get("duration");
 
-        criteriaQuery.select(criteriaBuilder.array(namePath,pricePath,durationPath));
+        criteriaQuery.select(criteriaBuilder.array(namePath, pricePath, durationPath));
 
         List<Object[]> list = session.createQuery(criteriaQuery).list();
         System.out.printf("%40s | %10s | %10s%n", "Name", "Price", "Duration");
         System.out.println("---------------------------------------------------------------");
 
-        list.sort(Comparator.comparing((Object[] row ) -> (Integer) row[1]).reversed());
+        list.sort(Comparator.comparing((Object[] row) -> (Integer) row[1]).reversed());
 
 
         list.forEach(row -> {
@@ -127,4 +127,30 @@ public class App {
             System.out.printf("%-40s | %-10d | %-10d%n", name, price, duration);
         });
     }
+
+        public static void findTeachers(Session session) {
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<Object[]> query = criteriaBuilder.createQuery(Object[].class);
+            Root<Teacher> root = query.from(Teacher.class);
+
+            Path<Object> namePath = root.get("name");
+            Path<Object> agePath = root.get("age");
+            Path<Object> salaryPath = root.get("salary");
+
+            CriteriaQuery<Object[]> select = query.select(criteriaBuilder.array(namePath, agePath, salaryPath));
+
+            List<Object[]> list = session.createQuery(select).list();
+            list.sort(Comparator.comparing((Object[] row) -> (Integer) row[2]).reversed());
+
+            System.out.printf("|%-40s|%-10s|%-10s|%n", "TEACHER", "AGE", "SALARY");
+            list.forEach(row ->
+            {
+                String name = (String)row[0];
+                Integer age = (Integer)row[1];
+                Integer salary = (Integer)row[2];
+
+                System.out.println("-".repeat(64));
+                System.out.printf("|%-40s|%-10s|%-10s|%n", name, age, salary);
+            });
+        }
 }
