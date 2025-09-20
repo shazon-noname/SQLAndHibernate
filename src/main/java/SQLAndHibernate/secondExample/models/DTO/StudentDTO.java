@@ -1,4 +1,4 @@
-package SQLAndHibernate.secondExample.models;
+package SQLAndHibernate.secondExample.models.DTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

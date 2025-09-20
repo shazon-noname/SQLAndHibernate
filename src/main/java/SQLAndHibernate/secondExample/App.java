@@ -1,6 +1,7 @@
 package SQLAndHibernate.secondExample;
 
 import SQLAndHibernate.secondExample.models.*;
+import SQLAndHibernate.secondExample.models.DTO.StudentDTO;
 import jakarta.persistence.Tuple;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
