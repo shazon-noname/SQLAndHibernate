@@ -5,8 +5,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
+import org.hibernate.Hibernate;
+import org.hibernate.proxy.HibernateProxy;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ShowAllDataBase {
@@ -55,6 +58,21 @@ public class ShowAllDataBase {
             System.out.println("No data found.");
             return;
         }
+
+        List<Object> initializedList = new ArrayList<>();
+        for (Object item : resultList) {
+            Hibernate.initialize(item);
+
+            // Якщо це проксі, отримуємо реальний об'єкт
+            if (item instanceof HibernateProxy) {
+                Object realEntity = ((HibernateProxy) item)
+                        .getHibernateLazyInitializer()
+                        .getImplementation();
+                initializedList.add(realEntity);
+            } else {
+                initializedList.add(item);
+            }
+        }
         System.out.println("\n" + tableName + ":");
 
         Field[] fields = entityClass.getDeclaredFields();
@@ -65,7 +83,7 @@ public class ShowAllDataBase {
             fields[i].setAccessible(true);
             columnWidths[i] = fields[i].getName().length();
         }
-        for (T item : resultList) {
+        for (Object item : initializedList) {
             for (int i = 0; i < fields.length; i++) {
                 try {
                     Object value = fields[i].get(item);
@@ -88,9 +106,10 @@ public class ShowAllDataBase {
         for (int width : columnWidths) {
             System.out.print("-".repeat(width + 2));
         }
+        System.out.println();
 
         //Друк рядків
-        for (T item : resultList) {
+        for (Object item : initializedList) {
             for (int i = 0; i < fields.length; i++) {
                 try {
                     Object value = fields[i].get(item);
@@ -102,10 +121,11 @@ public class ShowAllDataBase {
             System.out.println();
         }
     }
+
     public void printAll(EntityManager em) {
         printTable(em, SQLAndHibernate.secondExample.models.Course.class, "Courses");
         printTable(em, SQLAndHibernate.secondExample.models.Student.class, "Students");
-        printTable(em, SQLAndHibernate.secondExample.models.Teacher.class, "Teachers");
+        printTable(em, SQLAndHibernate.secondExample.models.Teacher.class, "Teachers");   //need   Course.java use @ManyToOne(fetch = FetchType.EAGER), because column = null if not use Hibernate.initialize(item);
         printTable(em, SQLAndHibernate.secondExample.models.PurchaseList.class, "PurchaseLists");
         printTable(em, SQLAndHibernate.secondExample.models.LinkedPurchaseList.class, "LinkedPurchaseLists");
         printTable(em, SQLAndHibernate.secondExample.models.Subscription.class, "Subscriptions");
