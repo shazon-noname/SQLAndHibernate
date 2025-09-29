@@ -168,7 +168,6 @@ public class App {
         criteriaQuery.select(criteriaBuilder.construct(StudentDTO.class, namePath, agePath, registrationDatePath));
 
         List<StudentDTO> resultList = session.createQuery(criteriaQuery).getResultList();
-
         int nameLength = 0;
         int ageLength = 0;
         int registrationDatePathLength = 0;

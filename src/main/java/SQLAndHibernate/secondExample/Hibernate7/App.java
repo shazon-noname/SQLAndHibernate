@@ -18,7 +18,6 @@ public class App {
 
             showAllDataBase.printAll(entityManager);
 
-//            showAllDataBase.printTablesFirstExample(entityManager, Teacher.class, "Teacher");
             transaction.commit();
         }
     }
