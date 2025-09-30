@@ -3,10 +3,7 @@ package SQLAndHibernate.secondExample;
 import SQLAndHibernate.secondExample.models.*;
 import SQLAndHibernate.secondExample.models.DTO.StudentDTO;
 import jakarta.persistence.Tuple;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Path;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -32,10 +29,73 @@ public class App {
 //        findCourse(session);
 //        firstExample(session);
 //        findTeachers(session);
-        findStudentsDTO(session);
+        fetchDetailedStudentInfo(session);
         tx.commit();
         session.close();
     }
+
+
+    public static void fetchDetailedStudentInfo(Session session) {
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+        CriteriaQuery<Tuple> query = criteriaBuilder.createQuery(Tuple.class);
+
+        Root<Student> studentRoot = query.from(Student.class);
+        Root<Course> courseRoot = query.from(Course.class);
+        Root<Teacher> teacherRoot = query.from(Teacher.class);
+        Root<Subscription> subscriptionRoot = query.from(Subscription.class);
+
+        query.select(criteriaBuilder.tuple(
+                studentRoot,
+                courseRoot,
+                teacherRoot,
+                subscriptionRoot
+        ));
+
+        //Predicate — це умова (filter), яка використовується в where.
+        //Тобто Predicate — це будівельний блок для фільтрів.
+        //Можеш створювати кілька Predicate і комбінувати їх через cb.and(...), cb.or(...):
+        Predicate studentRestriction = criteriaBuilder.and(
+                criteriaBuilder.greaterThan(studentRoot.get("age"), 18),
+                criteriaBuilder.isNotNull(studentRoot.get("registrationDate"))
+        );
+
+        Predicate courseRestriction = criteriaBuilder.and(
+                criteriaBuilder.like(courseRoot.get("name"), "%Java%"),
+                criteriaBuilder.greaterThan(courseRoot.get("price"), 1000)
+        );
+
+        Predicate teacherRestriction = criteriaBuilder.and(
+                criteriaBuilder.equal(teacherRoot.get("salary"), 5000)
+        );
+
+        Predicate subscriptionRestriction = criteriaBuilder.and(
+                criteriaBuilder.equal(subscriptionRoot.get("studentId"), studentRoot),
+                criteriaBuilder.equal(subscriptionRoot.get("courseId"), courseRoot)
+        );
+
+        query.where(criteriaBuilder.and(
+                studentRestriction,
+                courseRestriction,
+                teacherRestriction,
+                subscriptionRestriction
+        ));
+
+        List<Tuple> resultList = session.createQuery(query).getResultList();
+
+        for (Tuple tuple : resultList) {
+            Student student = tuple.get(0, Student.class);
+            Course course = tuple.get(1, Course.class);
+            Teacher teacher = tuple.get(2, Teacher.class);
+            Subscription subscription = tuple.get(3, Subscription.class);
+
+            System.out.println("Student: " + student.getName());
+            System.out.println("Course: " + course.getName());
+            System.out.println("Teacher: " + teacher.getName());
+            System.out.println("Subscription date: " + subscription.getSubscriptionDate());
+            System.out.println("----------------------------------------------");
+        }
+    }
+
 
     private static void firstExample(Session session) {
         List<PurchaseList> fromPurchaseList = session.createQuery("from PurchaseList", PurchaseList.class).list();
@@ -186,7 +246,9 @@ public class App {
             }
         }
 
-        nameLength+=2; ageLength+=2; registrationDatePathLength+=2;
+        nameLength += 2;
+        ageLength += 2;
+        registrationDatePathLength += 2;
 
         System.out.printf("|%-" + nameLength + "s|%-" + ageLength + "s|%-" + registrationDatePathLength + "s|%n",
                 "NAME", "AGE", "REGISTRATION DATE");
